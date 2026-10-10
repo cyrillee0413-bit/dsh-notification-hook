@@ -113,9 +113,8 @@ test('the manifest exports the host-bundle contract', () => {
   assert.equal(typeof Config, 'function', 'Config must be callable');
 });
 
-test('package manifest declares the 0.3.0 release contract', () => {
+test('package manifest declares the public release contract', () => {
   const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
-  assert.equal(manifest.version, '0.3.0');
   assert.equal(manifest.license, 'MIT');
   assert.equal(existsSync(new URL('../LICENSE', import.meta.url)), true, 'the declared license ships as a file');
 

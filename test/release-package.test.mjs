@@ -110,6 +110,7 @@ test('release scripts expose a portable syntax and package verification surface'
 test('verifier rejects malformed pack output, a missing archive and redacts child errors', async () => {
   const output = await makeOwnedTemp('package-errors');
   const secret = ['Bearer', 'abcdefghijklmnopqrstuvwxyz0123456789'].join(' ');
+  const manifest = JSON.parse(await readFile(join(PROJECT_ROOT, 'package.json'), 'utf8'));
   try {
     await assert.rejects(
       verifyPackage({ projectRoot: PROJECT_ROOT, outputDir: output, runCommand: async () => ({ stdout: 'oops', stderr: '', code: 0 }) }),
@@ -122,7 +123,7 @@ test('verifier rejects malformed pack output, a missing archive and redacts chil
         runCommand: async () => ({
           stdout: JSON.stringify([{
             name: 'dsh-notification-hook',
-            version: '0.3.0',
+            version: manifest.version,
             filename: 'missing.tgz',
             size: 10,
             files: EXPECTED_PACKAGE_FILES.map((path) => ({ path, size: 1 })),
@@ -148,13 +149,17 @@ test('verifier rejects malformed pack output, a missing archive and redacts chil
 
 test('a real candidate installs cleanly with a native volatile schema', async () => {
   const output = await makeOwnedTemp('package-valid');
+  const manifest = JSON.parse(await readFile(join(PROJECT_ROOT, 'package.json'), 'utf8'));
   try {
     const summary = await verifyPackage({ projectRoot: PROJECT_ROOT, outputDir: output });
     assert.equal(summary.name, 'dsh-notification-hook');
-    assert.equal(summary.version, '0.3.0');
+    assert.equal(summary.version, manifest.version);
     assert.deepEqual(summary.files, EXPECTED_PACKAGE_FILES);
     assert.match(summary.sha256, /^[a-f0-9]{64}$/);
-    assert.equal(await readFile(summary.checksumPath, 'utf8'), `${summary.sha256}  dsh-notification-hook-0.3.0.tgz\n`);
+    assert.equal(
+      await readFile(summary.checksumPath, 'utf8'),
+      `${summary.sha256}  dsh-notification-hook-${manifest.version}.tgz\n`,
+    );
   } finally {
     await removeOwnedTemp(output);
   }
@@ -216,11 +221,12 @@ test('verification failure leaves no owned install directory behind', async () =
   try {
     await copyPublishSource(project);
     await mkdir(output, { recursive: true });
+    const manifest = JSON.parse(await readFile(join(project, 'package.json'), 'utf8'));
     const patchPath = join(project, 'cordis.patch.yml');
     const patch = await readFile(patchPath, 'utf8');
     await writeFile(patchPath, patch.replace('testOnActivate: false', 'testOnActivate: true'));
     await mkdir(output, { recursive: true });
-    const finalArchive = join(output, 'dsh-notification-hook-0.3.0.tgz');
+    const finalArchive = join(output, `dsh-notification-hook-${manifest.version}.tgz`);
     const finalChecksum = `${finalArchive}.sha256`;
     await writeFile(finalArchive, 'previous verified archive');
     await writeFile(finalChecksum, 'previous verified checksum');
