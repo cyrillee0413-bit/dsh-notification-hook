@@ -112,8 +112,13 @@ export function parsePackOutput(output) {
   } catch {
     throw new Error('npm pack JSON output is malformed');
   }
-  invariant(Array.isArray(parsed) && parsed.length === 1, 'npm pack JSON must contain exactly one record');
-  const record = parsed[0];
+  const records = Array.isArray(parsed)
+    ? parsed
+    : parsed && typeof parsed === 'object'
+      ? Object.values(parsed)
+      : [];
+  invariant(records.length === 1, 'npm pack JSON must contain exactly one record');
+  const record = records[0];
   invariant(record && typeof record === 'object' && !Array.isArray(record), 'npm pack record is invalid');
   invariant(typeof record.name === 'string' && record.name.length > 0, 'npm pack record is missing name');
   invariant(typeof record.version === 'string' && record.version.length > 0, 'npm pack record is missing version');
