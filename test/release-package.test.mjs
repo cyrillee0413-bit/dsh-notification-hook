@@ -42,9 +42,31 @@ test('npm pack JSON is strict and rejects empty, malformed or incomplete output'
     files: EXPECTED_PACKAGE_FILES.map((path) => ({ path, size: 1 })),
   };
   assert.deepEqual(parsePackOutput(JSON.stringify([record])), record);
-  for (const output of ['', 'not json', '[]', '[{}]', '{}']) {
+  for (const output of [
+    '',
+    'not json',
+    '[]',
+    '[{}]',
+    '{}',
+    JSON.stringify([record, record]),
+    JSON.stringify({ first: record, second: record }),
+  ]) {
     assert.throws(() => parsePackOutput(output), /npm pack|JSON|record|filename/i, output);
   }
+});
+
+test('npm pack JSON accepts the keyed record emitted by npm 12', () => {
+  const record = {
+    id: 'dsh-notification-hook@0.3.0',
+    name: 'dsh-notification-hook',
+    version: '0.3.0',
+    filename: 'dsh-notification-hook-0.3.0.tgz',
+    size: 123,
+    files: EXPECTED_PACKAGE_FILES.map((path) => ({ path, size: 1 })),
+  };
+  const output = JSON.stringify({ 'dsh-notification-hook': record });
+
+  assert.deepEqual(parsePackOutput(output), record);
 });
 
 test('archive file validation is exact and normalizes Windows separators', () => {
