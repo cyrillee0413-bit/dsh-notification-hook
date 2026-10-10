@@ -1,5 +1,7 @@
 # Notification & Webhook Hook
 
+[![CI](https://github.com/cyrillee0413-bit/dsh-notification-hook/actions/workflows/ci.yml/badge.svg)](https://github.com/cyrillee0413-bit/dsh-notification-hook/actions/workflows/ci.yml)
+
 A lightweight DeepSeek Harness (DSH) plugin that notifies you when a task completes, fails, or waits for input. It can send native desktop notifications and POST to Feishu, WeCom, Telegram, Discord, Slack, or a generic JSON webhook at the same time.
 
 Version `0.3.0` is tested with DSH `0.2.0-rc.2` and declares compatibility with `>=0.2.0-rc.2 <0.3.0`.
@@ -22,16 +24,29 @@ Short completed or cancelled turns can be suppressed with `minDurationMs`. Failu
 
 ## Installation
 
-Install either the source folder or the release archive through DSH plugin management:
+Prefer an npm registry release or the verified `.tgz`. Both routes let npm/pnpm install the official `@deepseek-ai/schemastery` dependency, so DSH receives the native volatile Config required by the editable settings page:
 
-```text
-plugin_manager  action: install_bundle  target: <absolute path to this folder>
-plugin_manager  action: install_bundle  target: <absolute path to dsh-notification-hook-0.3.0.tgz>
+```powershell
+dsh plugin --profile desktop add dsh-notification-hook@0.3.0
+dsh plugin --profile desktop add C:\path\to\dsh-notification-hook-0.3.0.tgz
 ```
 
-After installing or replacing the bundle, restart DeepSeek Harness and refresh the settings page. Open **Settings → Built-in plugins → Notifications**; the editable settings form should appear.
+A bare `link:` installation is for source development only. Node resolves imports from the linked source realpath; if that source tree has no `node_modules`, Schemastery cannot resolve and the plugin deliberately falls back to its dependency-free schema. Delivery still works, but the settings page may show the recovery generator instead of a writable form. Run `npm ci` in the source directory before linking, or test the generated `.tgz` instead.
+
+After every install, upgrade, removal, or reinstall, restart DeepSeek Harness and refresh the settings page. DSH caches host modules by package name, so replacing files without a restart does not load the new implementation. Open **Settings → Built-in plugins → Notifications**; the editable settings form should appear.
 
 The row id is `notify-hook`. `config.enabled: false` keeps the row loaded but silent; the DSH row or bundle switches can unload it completely.
+
+### DSH compatibility
+
+The peer range is exactly `>=0.2.0-rc.2 <0.3.0`.
+
+| DSH version | Support |
+|---|---|
+| `0.2.0-rc.2` | fully tested by the release lifecycle |
+| later compatible `0.2.0` RCs and stable `0.2.x` | accepted by the peer range; CI pins `0.2.0-rc.2` |
+| `0.2.1-alpha.2` | intentionally rejected by npm prerelease tuple rules |
+| `0.3.0` and later | rejected until this plugin is retested and publishes a widened peer range |
 
 ## Settings page
 
@@ -138,16 +153,18 @@ Processes are spawned with argument arrays, never through a shell. Session-deriv
 ## Development and verification
 
 ```powershell
-npm install --ignore-scripts
-npm test
-node --check lib/client.js
-node --check plugin.js
+npm ci
+npm run check
+npm run verify:package -- --out-dir dist
+npm run verify:dsh -- --archive-dir dist
 node tools/selftest.mjs --no-desktop
 node tools/selftest.mjs --desktop-only
 npm pack --dry-run --json
 ```
 
-The loopback self-test never contacts an external service. The desktop-only test intentionally displays three real native notifications.
+`verify:package` packs, scans, installs and imports the real candidate archive. `verify:dsh` provisions pinned DSH and pnpm versions in an owned temporary profile, then checks install, file-spec replacement, config composition, removal and reinstall. The loopback self-test never contacts an external service. The desktop-only test intentionally displays three real native notifications.
+
+Maintainers should use [docs/RELEASING.md](docs/RELEASING.md) for the one-time npm bootstrap and normal OIDC release procedure.
 
 ## Troubleshooting
 

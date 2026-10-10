@@ -112,14 +112,14 @@ test('body lines follow the documented order', () => {
   const meta = {
     sessionId: SESSION_ID,
     title: 'Fix login timeout',
-    cwd: 'E:\\deepseek harness\\dsh-skill',
+    cwd: 'C:\\work\\app',
     durationMs: 133000,
   };
 
   const zh = formatNotification(signal, meta, { locale: 'zh' });
   assert.deepEqual(lines(zh), [
     'Fix login timeout',
-    'dsh-skill',
+    'app',
     'LLM_TIMEOUT: request timed out',
     '耗时 2m13s',
     SHORT_ID,
@@ -129,7 +129,7 @@ test('body lines follow the documented order', () => {
   const en = formatNotification(signal, meta, { locale: 'en' });
   assert.deepEqual(lines(en), [
     'Fix login timeout',
-    'dsh-skill',
+    'app',
     'LLM_TIMEOUT: request timed out',
     'Elapsed 2m13s',
     SHORT_ID,
@@ -142,7 +142,7 @@ test('project wins over cwd and both are reduced to a basename', () => {
 
   const fromProject = formatNotification(
     { status: 'completed' },
-    { cwd: 'E:\\deepseek harness\\dsh-skill', project: '/srv/apps/api' },
+    { cwd: 'C:\\work\\app', project: '/srv/apps/api' },
     { locale: 'en' },
   );
   assert.deepEqual(lines(fromProject), ['api']);

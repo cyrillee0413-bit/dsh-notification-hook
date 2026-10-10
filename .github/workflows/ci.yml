@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Check syntax and tests
+        run: npm run check
+
+      - name: Build and verify candidate package
+        run: npm run verify:package -- --out-dir dist
+
+      - name: Verify the full DSH lifecycle
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run verify:dsh -- --archive-dir dist
+
+      - name: Upload verified candidate
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-notification-hook-candidate
+          path: |
+            dist/*.tgz
+            dist/*.tgz.sha256
+          if-no-files-found: error
+          retention-days: 7

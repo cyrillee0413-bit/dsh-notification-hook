@@ -1,11 +1,33 @@
 {
   "name": "dsh-notification-hook",
   "version": "0.3.0",
-  "private": true,
   "type": "module",
   "description": "Notification & Webhook Hook: native desktop popups and HTTP POSTs (Feishu / WeCom / Telegram / Discord / Slack) when a session finishes, fails, or starts waiting for you. Ships a live settings page in the Web UI.",
   "icon": "./icon.svg",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cyrillee0413-bit/dsh-notification-hook.git"
+  },
+  "homepage": "https://github.com/cyrillee0413-bit/dsh-notification-hook#readme",
+  "bugs": {
+    "url": "https://github.com/cyrillee0413-bit/dsh-notification-hook/issues"
+  },
+  "keywords": [
+    "deepseek",
+    "dsh",
+    "notification",
+    "webhook",
+    "desktop-notification",
+    "feishu",
+    "wecom",
+    "telegram",
+    "discord",
+    "slack"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=22"
   },
@@ -31,8 +53,13 @@
     "docs/WEBHOOK-GUIDE.zh.md"
   ],
   "scripts": {
+    "check:syntax": "node tools/release/check-syntax.mjs",
+    "check": "npm run check:syntax && npm test",
     "test": "node --test test/*.test.mjs",
-    "selftest": "node tools/selftest.mjs"
+    "selftest": "node tools/selftest.mjs",
+    "verify:package": "node tools/release/verify-package.mjs",
+    "verify:dsh": "node tools/release/verify-dsh-lifecycle.mjs",
+    "release:preflight": "node tools/release/preflight.mjs"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "~3.18.4"
