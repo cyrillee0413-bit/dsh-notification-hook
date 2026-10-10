@@ -155,6 +155,8 @@ test('release dry-run cannot publish and tag publishing uses exact modern OIDC t
   assert.match(yaml, /npm run release:preflight -- --mode publish --tag "\$GITHUB_REF_NAME"/);
   assert.doesNotMatch(yaml, /NODE_AUTH_TOKEN/);
   assert.doesNotMatch(yaml, /--provenance/);
+  assert.match(yaml, /npm publish \.\/dist\/\*\.tgz --access public/);
+  assert.doesNotMatch(yaml, /npm publish dist\/\*\.tgz/);
   assert.match(yaml, /gh release view "\$GITHUB_REF_NAME" --json isDraft/);
   assert.match(yaml, /gh release upload "\$GITHUB_REF_NAME"[\s\S]*--clobber/);
   const draft = yaml.indexOf('gh release create');
