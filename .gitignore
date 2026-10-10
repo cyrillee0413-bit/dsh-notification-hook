@@ -1,0 +1,18 @@
+node_modules/
+dist/
+*.tgz
+coverage/
+.nyc_output/
+receiver.jsonl
+tools/receiver.jsonl
+.worktrees/
+.superpowers/
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo

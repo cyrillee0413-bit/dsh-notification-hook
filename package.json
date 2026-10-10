@@ -1,0 +1,63 @@
+{
+  "name": "dsh-notification-hook",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Notification & Webhook Hook: native desktop popups and HTTP POSTs (Feishu / WeCom / Telegram / Discord / Slack) when a session finishes, fails, or starts waiting for you. Ships a live settings page in the Web UI.",
+  "icon": "./icon.svg",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "plugin.js",
+  "exports": {
+    ".": "./plugin.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/en.json": "./locale/en.json",
+    "./locale/zh.json": "./locale/zh.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "plugin.js",
+    "lib",
+    "locale",
+    "cordis.patch.yml",
+    "icon.svg",
+    "LICENSE",
+    "README.md",
+    "README.zh.md",
+    "docs/WEBHOOK-GUIDE.md",
+    "docs/WEBHOOK-GUIDE.zh.md"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "selftest": "node tools/selftest.mjs"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "~3.18.4"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh": ">=0.2.0-rc.2 <0.3.0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh": {
+      "optional": true
+    }
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-api-gateway",
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-settings-plugins"
+      ]
+    }
+  }
+}

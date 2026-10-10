@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Notification & Webhook Hook",
+    "description": "Native desktop popups and webhook POSTs when a task completes, fails, or starts waiting for you."
+  }
+}

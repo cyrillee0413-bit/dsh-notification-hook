@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Notification bell">
+  <defs>
+    <linearGradient id="bell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd166"/>
+      <stop offset="1" stop-color="#f0932b"/>
+    </linearGradient>
+  </defs>
+  <path d="M32 5c-2.2 0-4 1.8-4 4v2.2C20.4 13.1 15 19.6 15 27.3V39l-4.6 6.1A3 3 0 0 0 12.8 50h38.4a3 3 0 0 0 2.4-4.9L49 39V27.3c0-7.7-5.4-14.2-13-16.1V9c0-2.2-1.8-4-4-4Z" fill="url(#bell)"/>
+  <path d="M25.4 53.2a6.6 6.6 0 0 0 13.2 0Z" fill="#f0932b"/>
+  <circle cx="49" cy="15" r="9" fill="#ff4d4f" stroke="#fff" stroke-width="3"/>
+</svg>

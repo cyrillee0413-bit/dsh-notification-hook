@@ -1,0 +1,85 @@
+# dsh-notification-hook — inserts one row into the profile roster.
+# The row is the host half: delivery happens from the harness Host process itself. The bundle
+# also declares `dsh.client`, which adds a settings page to the Web UI (Settings → Plugins).
+# Everything in this config block can also be edited from that page; this file is the fallback
+# and the source of the defaults.
+#
+# Every value below is optional; the plugin has working defaults for all of them.
+- insert:
+    - id: notify-hook
+      name: dsh-notification-hook
+      config:
+        enabled: true
+        # Language follows DSH's global preference. Older profiles may keep
+        # `locale: auto | zh | en` as a fallback if DSH's locale namespace is unavailable.
+        # Which outcomes announce themselves. Failures and awaiting-input are the ones a
+        # user actually loses time to, so they are on by default.
+        events:
+          completed: true
+          failed: true
+          awaitingInput: true
+          attention: true
+          cancelled: false
+        # A completed turn shorter than this is not announced (failures / waiting always are).
+        minDurationMs: 10000
+        # How long a permission prompt must stay open before it is announced. A prompt that
+        # resolves itself stays silent.
+        awaitingInputDelayMs: 2500
+        # Notify for subagent sessions as well.
+        includeSubagents: false
+        desktop:
+          enabled: true
+          sound: false
+          # Windows only: AppUserModelID override. Empty uses the PowerShell AUMID, which is
+          # always registered and therefore reliably renders a toast.
+          appId: ''
+          timeoutMs: 10000
+        # Webhook targets. `type: auto` sniffs the provider from the URL. Each target has its
+        # own `enabled` switch, so one can be parked without deleting its URL.
+        #
+        # ── 想同时推到企业微信 + 桌面？把下面三行的注释去掉，换成你自己的机器人地址即可 ──
+        # 企业微信群里「添加群机器人」后拿到的 Webhook 地址形如
+        # https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxxx
+        # webhooks:
+        #   - name: 企业微信
+        #     enabled: true          # 关掉它就只留桌面通知，配置不会被删
+        #     type: auto
+        #     url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY
+        #
+        # 其它服务商同样把注释去掉即可（type: auto 会自动识别）：
+        #   - name: feishu
+        #     enabled: true
+        #     type: auto
+        #     url: https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxx
+        #   - name: telegram
+        #     type: telegram
+        #     url: https://api.telegram.org/bot<token>/sendMessage
+        #     chatId: '123456789'
+        #   - name: discord
+        #     type: auto
+        #     url: https://discord.com/api/webhooks/000/xxxxxxxx
+        #   - name: slack
+        #     type: auto
+        #     url: https://hooks.slack.com/services/T000/B000/xxxxxxxx
+        #   - name: generic
+        #     type: generic
+        #     url: https://example.internal/dsh/notify
+        #     headers:
+        #       authorization: Bearer xxxxxxxx
+        #
+        # Empty by default: an unconfigured plugin must not talk to the network. (An earlier
+        # revision of this file shipped a loopback target used to verify the install; it has
+        # been removed, because a shipped default that posts on every activation is a bug.)
+        webhooks: []
+        timeoutMs: 8000
+        retries: 1
+        logDeliveries: true
+        # Send one test notification the moment the row activates (setup aid). Keep this false
+        # in a committed profile: it fires on every config reload. The settings UI has a
+        # "send test notification" button that arms this, fires, and disarms it again.
+        testOnActivate: false
+        #
+        # To silence the plugin without unloading it, either set `enabled: false` above, or
+        # disable the row itself (the idiomatic switch, written by plugin_manager set_plugin):
+        #   - id: notify-hook
+        #     disabled: true
