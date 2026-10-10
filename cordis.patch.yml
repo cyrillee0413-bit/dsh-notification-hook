@@ -34,39 +34,9 @@
           # always registered and therefore reliably renders a toast.
           appId: ''
           timeoutMs: 10000
-        # Webhook targets. `type: auto` sniffs the provider from the URL. Each target has its
-        # own `enabled` switch, so one can be parked without deleting its URL.
-        #
-        # ── 想同时推到企业微信 + 桌面？把下面三行的注释去掉，换成你自己的机器人地址即可 ──
-        # 企业微信群里「添加群机器人」后拿到的 Webhook 地址形如
-        # https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxxx
-        # webhooks:
-        #   - name: 企业微信
-        #     enabled: true          # 关掉它就只留桌面通知，配置不会被删
-        #     type: auto
-        #     url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY
-        #
-        # 其它服务商同样把注释去掉即可（type: auto 会自动识别）：
-        #   - name: feishu
-        #     enabled: true
-        #     type: auto
-        #     url: https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxx
-        #   - name: telegram
-        #     type: telegram
-        #     url: https://api.telegram.org/bot<token>/sendMessage
-        #     chatId: '123456789'
-        #   - name: discord
-        #     type: auto
-        #     url: https://discord.com/api/webhooks/000/xxxxxxxx
-        #   - name: slack
-        #     type: auto
-        #     url: https://hooks.slack.com/services/T000/B000/xxxxxxxx
-        #   - name: generic
-        #     type: generic
-        #     url: https://example.internal/dsh/notify
-        #     headers:
-        #       authorization: Bearer xxxxxxxx
-        #
+        # Webhook targets are configured in the settings page. Provider-specific endpoint
+        # templates and setup steps live in docs/WEBHOOK-GUIDE*.md so this publishable patch
+        # can stay free of credential-shaped examples.
         # Empty by default: an unconfigured plugin must not talk to the network. (An earlier
         # revision of this file shipped a loopback target used to verify the install; it has
         # been removed, because a shipped default that posts on every activation is a bug.)

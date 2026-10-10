@@ -1,5 +1,7 @@
 # 任务完成与等待提醒器（Notification & Webhook Hook）
 
+[![CI](https://github.com/cyrillee0413-bit/dsh-notification-hook/actions/workflows/ci.yml/badge.svg)](https://github.com/cyrillee0413-bit/dsh-notification-hook/actions/workflows/ci.yml)
+
 一个超轻量的 DeepSeek Harness（DSH）插件：任务完成、失败或等待输入时，发送系统原生桌面通知，并可同时 POST 到飞书、企业微信、Telegram、Discord、Slack 或通用 JSON Webhook。
 
 `0.3.0` 已在 DSH `0.2.0-rc.2` 上验证，声明的兼容范围为 `>=0.2.0-rc.2 <0.3.0`。
@@ -22,16 +24,29 @@
 
 ## 安装
 
-可以把源码目录或发布的 `.tgz` 交给 DSH 插件管理器：
+推荐从 npm 注册表安装正式版本，或安装经过验证的 `.tgz`。这两种方式都会让 npm/pnpm 安装 DSH 官方依赖 `@deepseek-ai/schemastery`，从而向 DSH 提供设置页所需的原生 volatile Config：
 
-```text
-plugin_manager  action: install_bundle  target: <本目录的绝对路径>
-plugin_manager  action: install_bundle  target: <dsh-notification-hook-0.3.0.tgz 的绝对路径>
+```powershell
+dsh plugin --profile desktop add dsh-notification-hook@0.3.0
+dsh plugin --profile desktop add C:\path\to\dsh-notification-hook-0.3.0.tgz
 ```
 
-安装或替换后请重启 DeepSeek Harness，并刷新设置页。打开 **设置 → 内置插件 → Notifications / 任务提醒**，应能看到可编辑的设置表单。
+裸 `link:` 只适合源码开发。Node 会从链接目标的真实路径解析依赖；如果源码目录没有自己的 `node_modules`，Schemastery 就无法解析，插件会有意退回零依赖 schema。此时通知投递仍可工作，但设置页可能显示应急生成器而不是可写表单。链接前请在源码目录运行 `npm ci`，或者优先测试生成的 `.tgz`。
+
+每次安装、升级、卸载或重新安装后都必须重启 DeepSeek Harness，并刷新设置页。DSH 会按包名缓存 Host 模块，只替换文件而不重启不会加载新实现。打开 **设置 → 内置插件 → Notifications / 任务提醒**，应能看到可编辑的设置表单。
 
 插件行 id 是 `notify-hook`。`config.enabled: false` 会保留该行但停止监听；DSH 的行开关或 bundle 开关则会彻底卸载它。
+
+### DSH 兼容性
+
+peer 范围固定为 `>=0.2.0-rc.2 <0.3.0`。
+
+| DSH 版本 | 支持情况 |
+|---|---|
+| `0.2.0-rc.2` | 发布生命周期完整实测 |
+| 后续兼容的 `0.2.0` RC 与稳定版 `0.2.x` | peer 范围接受；CI 固定验证 `0.2.0-rc.2` |
+| `0.2.1-alpha.2` | 按 npm 预发布元组规则有意拒绝 |
+| `0.3.0` 及更高版本 | 在插件针对新宿主复测并放宽 peer 前拒绝安装 |
 
 ## 个性化设置页
 
@@ -136,16 +151,18 @@ webhooks:
 ## 开发与验证
 
 ```powershell
-npm install --ignore-scripts
-npm test
-node --check lib/client.js
-node --check plugin.js
+npm ci
+npm run check
+npm run verify:package -- --out-dir dist
+npm run verify:dsh -- --archive-dir dist
 node tools/selftest.mjs --no-desktop
 node tools/selftest.mjs --desktop-only
 npm pack --dry-run --json
 ```
 
-回环自检不会访问外部服务；桌面专项自检会有意显示三条真实系统通知。
+`verify:package` 会对真实候选包执行打包、秘密扫描、空白安装和导入；`verify:dsh` 会在带所有权标记的临时 profile 中安装固定版本的 DSH 与 pnpm，并验证安装、file specifier 替换、配置组合、卸载和重装。回环自检不会访问外部服务；桌面专项自检会有意显示三条真实系统通知。
+
+维护者进行首次 npm 引导或常规 OIDC 发布时，请遵循 [docs/RELEASING.md](docs/RELEASING.md)。
 
 ## 排查
 

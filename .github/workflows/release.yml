@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+
+  rehearse:
+    name: Rehearse release toolchain without publishing
+    needs: verify
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@v7
+
+      - name: Set up release Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+
+      - name: Pin the release npm CLI
+        run: |
+          npm install --prefix "$RUNNER_TEMP/npm-cli" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund npm@12.2.0
+          echo "$RUNNER_TEMP/npm-cli/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Assert release toolchain versions
+        run: |
+          test "$(node --version)" = "v24.15.0"
+          test "$(npm --version)" = "12.2.0"
+
+      - name: Install and verify the candidate
+        run: |
+          npm ci
+          npm run verify:package -- --out-dir dist
+          npm run release:preflight -- --mode dry-run
+
+  publish:
+    name: Publish verified package
+    needs: verify
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up release Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+
+      - name: Pin the OIDC-capable npm CLI
+        run: |
+          npm install --prefix "$RUNNER_TEMP/npm-cli" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund npm@12.2.0
+          echo "$RUNNER_TEMP/npm-cli/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Assert release toolchain versions
+        run: |
+          test "$(node --version)" = "v24.15.0"
+          test "$(npm --version)" = "12.2.0"
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Rebuild and verify release archive
+        run: npm run verify:package -- --out-dir dist
+
+      - name: Validate tag, changelog, Git and npm availability
+        run: npm run release:preflight -- --mode publish --tag "$GITHUB_REF_NAME"
+
+      - name: Create or refresh draft GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if draft_state="$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq '.isDraft' 2>/dev/null)"; then
+            test "$draft_state" = "true"
+            gh release upload "$GITHUB_REF_NAME" dist/*.tgz dist/*.tgz.sha256 --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.tgz dist/*.tgz.sha256 --draft --verify-tag --title "$GITHUB_REF_NAME"
+          fi
+
+      - name: Publish to npm with Trusted Publishing
+        run: npm publish dist/*.tgz --access public
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$GITHUB_REF_NAME" --draft=false

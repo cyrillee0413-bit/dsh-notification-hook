@@ -119,10 +119,25 @@ test('package manifest declares the 0.3.0 release contract', () => {
   assert.equal(manifest.license, 'MIT');
   assert.equal(existsSync(new URL('../LICENSE', import.meta.url)), true, 'the declared license ships as a file');
 
+  assert.equal('private' in manifest, false, 'the public release must not remain private');
+  assert.deepEqual(manifest.repository, {
+    type: 'git',
+    url: 'git+https://github.com/cyrillee0413-bit/dsh-notification-hook.git',
+  });
+  assert.equal(manifest.homepage, 'https://github.com/cyrillee0413-bit/dsh-notification-hook#readme');
+  assert.deepEqual(manifest.bugs, {
+    url: 'https://github.com/cyrillee0413-bit/dsh-notification-hook/issues',
+  });
+  assert.deepEqual(manifest.publishConfig, { access: 'public' });
+  for (const keyword of ['deepseek', 'dsh', 'notification', 'webhook', 'telegram', 'discord']) {
+    assert.ok(manifest.keywords?.includes(keyword), `missing public package keyword: ${keyword}`);
+  }
+
   const runtimeDependencies = Object.keys(manifest.dependencies || {});
   assert.deepEqual(runtimeDependencies, ['@deepseek-ai/schemastery']);
   assert.ok(runtimeDependencies.every((name) => name.startsWith('@deepseek-ai/')));
   assert.equal(manifest.peerDependencies?.['@deepseek-ai/dsh'], '>=0.2.0-rc.2 <0.3.0');
+  assert.equal(manifest.peerDependenciesMeta?.['@deepseek-ai/dsh']?.optional, true);
 
   const files = manifest.files || [];
   assert.ok(files.includes('LICENSE'));
@@ -131,6 +146,67 @@ test('package manifest declares the 0.3.0 release contract', () => {
   for (const forbidden of ['test', 'tools', 'HANDOFF.md', 'VERIFICATION.md', 'docs']) {
     assert.equal(files.includes(forbidden), false, `${forbidden} is not part of the runtime archive`);
   }
+});
+
+test('the published patch is inert and contains no provider endpoint template', () => {
+  const patch = readFileSync(new URL('../cordis.patch.yml', import.meta.url), 'utf8');
+
+  assert.match(patch, /^\s*webhooks:\s*\[\]\s*$/m);
+  assert.match(patch, /^\s*testOnActivate:\s*false\s*$/m);
+  for (const forbidden of [
+    'api.telegram.org/bot',
+    'hooks.slack.com/services',
+    'discord.com/api/webhooks',
+    'open.feishu.cn/open-apis/bot',
+    'qyapi.weixin.qq.com/cgi-bin/webhook',
+    'Bearer xxxxxxxx',
+  ]) {
+    assert.equal(patch.includes(forbidden), false, `published patch contains endpoint template: ${forbidden}`);
+  }
+});
+
+test('bilingual release documentation explains install modes, restart and compatibility', () => {
+  const documents = [
+    ['English', readFileSync(new URL('../README.md', import.meta.url), 'utf8')],
+    ['Chinese', readFileSync(new URL('../README.zh.md', import.meta.url), 'utf8')],
+  ];
+  for (const [language, text] of documents) {
+    assert.match(text, /actions\/workflows\/ci\.yml\/badge\.svg/u, `${language}: CI badge`);
+    assert.match(text, /(?:registry|npm registry|npm 注册表)/iu, `${language}: registry install`);
+    assert.match(text, /\.tgz/u, `${language}: tarball install`);
+    assert.match(text, /link:/u, `${language}: bare link behavior`);
+    assert.match(text, /Schemastery/u, `${language}: native schema dependency`);
+    assert.match(text, /restart|重启/iu, `${language}: restart requirement`);
+    assert.match(text, />=0\.2\.0-rc\.2 <0\.3\.0/u, `${language}: exact peer range`);
+    assert.match(text, /0\.2\.1-alpha\.2/u, `${language}: alpha exclusion`);
+    assert.match(text, /0\.3\.0/u, `${language}: DSH 0.3.0 boundary`);
+    assert.match(text, /npm run verify:package/u, `${language}: package verification command`);
+    assert.match(text, /npm run verify:dsh/u, `${language}: lifecycle verification command`);
+  }
+});
+
+test('the maintainer release guide covers bootstrap, OIDC and explicit approval boundaries', () => {
+  const guide = readFileSync(new URL('../docs/RELEASING.md', import.meta.url), 'utf8');
+  for (const marker of [
+    '24.15.0',
+    '12.2.0',
+    '0.3.0-rc.0',
+    'npm stage',
+    '--tag next',
+    '2FA',
+    'OIDC',
+    'two days',
+    'release:preflight',
+  ]) {
+    assert.ok(guide.includes(marker), `release guide is missing ${marker}`);
+  }
+  assert.match(guide, /verify:dsh -- --archive-dir dist/u);
+  assert.match(guide, /public repository/iu);
+  assert.match(guide, /workflow filename[^\n]*`release\.yml`/iu);
+  assert.match(guide, /Allow npm publish/u);
+  assert.match(guide, /traditional token publishing/iu);
+  assert.match(guide, /reserved while.*pending.*(?:restag|stage (?:it )?again)/iu);
+  assert.match(guide, /must not.*automatically|never.*automatically|explicit maintainer approval/iu);
 });
 
 /**
