@@ -1,14 +1,30 @@
-# Notification & Webhook Hook
+# DSH Notifications — Desktop & Webhook Alerts
+
+English | [简体中文](README.zh.md)
 
 [![CI](https://github.com/cyrillee0413-bit/dsh-notification-hook/actions/workflows/ci.yml/badge.svg)](https://github.com/cyrillee0413-bit/dsh-notification-hook/actions/workflows/ci.yml)
 
-A lightweight DeepSeek Harness (DSH) plugin that notifies you when a task completes, fails, or waits for input. It can send native desktop notifications and POST to Feishu, WeCom, Telegram, Discord, Slack, or a generic JSON webhook at the same time.
+Leave a task running in DeepSeek Harness (DSH) and get back to other work. Receive an alert when it **completes, fails, or needs your input**, including approval requests and agent questions.
+
+- **Desktop + chat:** send desktop notifications and messages to Feishu, WeCom, Telegram, Discord, Slack, or a generic JSON webhook at the same time.
+- **Fewer interruptions:** filter short successful tasks, delay approval alerts, and enable each target independently.
+- **Configure in DSH:** use an editable settings page that follows DSH's language; no extra build step is required.
+
+## Quick start
+
+With DSH installed, run:
+
+```powershell
+dsh plugin --profile desktop add dsh-notification-hook@0.3.0
+```
+
+`desktop` is the desktop application's profile. For another profile, replace `desktop` with its name.
+
+Restart DSH, open **Settings → Built-in plugins → Notifications**, enable your targets, then select **Send test notification**. For Telegram and other providers, follow the [target setup guide](docs/WEBHOOK-GUIDE.md).
+
+Normal npm installation installs the required official runtime component automatically. You do **not** need to clone this repository or run `npm ci`.
 
 Version `0.3.0` is tested with DSH `0.2.0-rc.2` and declares compatibility with `>=0.2.0-rc.2 <0.3.0`.
-
-## Dependency policy
-
-Delivery uses only `node:*` modules and local files: no `node-notifier`, HTTP client, UI framework package, build step, or bundler. The only direct runtime dependency is `@deepseek-ai/schemastery`, an official DSH runtime component required for the writable settings namespace. The browser uses the React instance already provided by DSH.
 
 ## Notifications
 
@@ -45,8 +61,10 @@ The peer range is exactly `>=0.2.0-rc.2 <0.3.0`.
 |---|---|
 | `0.2.0-rc.2` | fully tested by the release lifecycle |
 | later compatible `0.2.0` RCs and stable `0.2.x` | accepted by the peer range; CI pins `0.2.0-rc.2` |
-| `0.2.1-alpha.2` | intentionally rejected by npm prerelease tuple rules |
+| `0.2.1-alpha.2` | excluded by the current peer range under npm prerelease tuple rules |
 | `0.3.0` and later | rejected until this plugin is retested and publishes a widened peer range |
+
+An excluded version is outside the declared support range; it is not evidence that the plugin has been tested and found broken on that version. Include your exact DSH version when requesting compatibility.
 
 ## Settings page
 
@@ -152,6 +170,8 @@ Processes are spawned with argument arrays, never through a shell. Session-deriv
 
 ## Development and verification
 
+Delivery uses only `node:*` modules and local files: no `node-notifier`, HTTP client, UI framework package, build step, or bundler. The only direct runtime dependency is `@deepseek-ai/schemastery`, an official DSH runtime component required for the writable settings namespace. The browser uses the React instance already provided by DSH.
+
 ```powershell
 npm ci
 npm run check
@@ -178,6 +198,12 @@ Maintainers should use [docs/RELEASING.md](docs/RELEASING.md) for the one-time n
 | Desktop delivery fails | check OS notification permissions and the platform command listed above |
 
 For provider-specific errors such as Telegram Chat IDs or platform webhook permissions, use the **[notification target setup guide](docs/WEBHOOK-GUIDE.md)**.
+
+## Feedback
+
+This is an early community project. Automated checks cover packaging and lifecycle behavior on Windows, macOS, and Linux; actual desktop delivery also depends on OS notification permissions and available system commands.
+
+[Report an installation problem](https://github.com/cyrillee0413-bit/dsh-notification-hook/issues/new?template=installation.md) or [report a notification problem](https://github.com/cyrillee0413-bit/dsh-notification-hook/issues/new?template=notification.md). Include your OS, DSH version, plugin version, and redacted error. Remove bot tokens, webhook URLs, authorization headers, and private task content from logs and screenshots.
 
 ## License
 

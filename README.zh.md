@@ -1,14 +1,30 @@
-# 任务完成与等待提醒器（Notification & Webhook Hook）
+# DSH 任务提醒 — 桌面通知与多平台推送
+
+[English](README.md) | 简体中文
 
 [![CI](https://github.com/cyrillee0413-bit/dsh-notification-hook/actions/workflows/ci.yml/badge.svg)](https://github.com/cyrillee0413-bit/dsh-notification-hook/actions/workflows/ci.yml)
 
-一个超轻量的 DeepSeek Harness（DSH）插件：任务完成、失败或等待输入时，发送系统原生桌面通知，并可同时 POST 到飞书、企业微信、Telegram、Discord、Slack 或通用 JSON Webhook。
+把任务交给 DeepSeek Harness（DSH）后，可以切去做别的事。任务**完成、失败或需要你输入**时再收到提醒，包括权限确认和 Agent 提问。
+
+- **桌面与聊天软件同时提醒**：支持桌面通知、飞书、企业微信、Telegram、Discord、Slack 和通用 JSON Webhook。
+- **减少打扰**：过滤很快完成的任务、延迟权限确认提醒，每个目标可以单独开关。
+- **直接在 DSH 设置**：提供可编辑的设置页面，语言跟随 DSH，无需额外构建。
+
+## 快速开始
+
+已安装 DSH 的情况下，运行：
+
+```powershell
+dsh plugin --profile desktop add dsh-notification-hook@0.3.0
+```
+
+`desktop` 是桌面应用使用的 profile。如果你使用其他 profile，请将 `desktop` 替换为对应名称。
+
+重启 DSH，打开 **设置 → 内置插件 → 任务提醒**，启用需要的目标，然后点击 **发送测试通知**。Telegram 等平台的填写方法见 [推送平台配置说明书](docs/WEBHOOK-GUIDE.zh.md)。
+
+正常从 npm 安装会自动安装所需的官方运行时组件，**不需要克隆源码，也不需要手动运行 `npm ci`**。
 
 `0.3.0` 已在 DSH `0.2.0-rc.2` 上验证，声明的兼容范围为 `>=0.2.0-rc.2 <0.3.0`。
-
-## 依赖原则
-
-投递逻辑只使用 `node:*` 内置模块和项目本地文件：没有 `node-notifier`、HTTP 客户端、额外 UI 框架、构建步骤或打包器。唯一直接运行时依赖是 DSH 官方组件 `@deepseek-ai/schemastery`，用于提供可写的设置命名空间；浏览器端使用 DSH 已提供的 React。
 
 ## 哪些状态会提醒
 
@@ -45,8 +61,10 @@ peer 范围固定为 `>=0.2.0-rc.2 <0.3.0`。
 |---|---|
 | `0.2.0-rc.2` | 发布生命周期完整实测 |
 | 后续兼容的 `0.2.0` RC 与稳定版 `0.2.x` | peer 范围接受；CI 固定验证 `0.2.0-rc.2` |
-| `0.2.1-alpha.2` | 按 npm 预发布元组规则有意拒绝 |
+| `0.2.1-alpha.2` | 受 npm 预发布元组规则影响，不在当前 peer 接受范围内 |
 | `0.3.0` 及更高版本 | 在插件针对新宿主复测并放宽 peer 前拒绝安装 |
+
+范围外版本表示尚未声明支持，不代表已经实测无法运行。请求适配时，请提供具体的 DSH 版本。
 
 ## 个性化设置页
 
@@ -150,6 +168,8 @@ webhooks:
 
 ## 开发与验证
 
+投递逻辑只使用 `node:*` 内置模块和项目本地文件：没有 `node-notifier`、HTTP 客户端、额外 UI 框架、构建步骤或打包器。唯一直接运行时依赖是 DSH 官方组件 `@deepseek-ai/schemastery`，用于提供可写的设置命名空间；浏览器端使用 DSH 已提供的 React。
+
 ```powershell
 npm ci
 npm run check
@@ -176,6 +196,12 @@ npm pack --dry-run --json
 | 桌面通知失败 | 检查系统通知权限和上表对应的系统命令 |
 
 Telegram 会话 ID、各平台权限等专项问题，请查阅 **[推送平台配置说明书](docs/WEBHOOK-GUIDE.zh.md)**。
+
+## 反馈问题
+
+这是一个早期社区项目。自动检查覆盖 Windows、macOS 和 Linux 的打包与生命周期行为；实际桌面通知还依赖系统通知权限和可用的系统命令。
+
+遇到问题可以提交 [安装问题](https://github.com/cyrillee0413-bit/dsh-notification-hook/issues/new?template=installation.md) 或 [通知问题](https://github.com/cyrillee0413-bit/dsh-notification-hook/issues/new?template=notification.md)。请提供系统、DSH 版本、插件版本和脱敏后的错误信息。分享日志或截图前，请删除机器人 Token、Webhook URL、Authorization 请求头及私密任务内容。
 
 ## 许可证
 
